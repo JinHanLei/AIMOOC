@@ -81,7 +81,7 @@ export function Sidebar({ className }: SidebarProps) {
               <BarChart2 className="h-5 w-5" />
               <div className="flex-1">
                 <div className="flex justify-between">
-                  <span>总进度</span>
+                  <span>当前进度</span>
                   <span>75%</span>
                 </div>
                 <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
