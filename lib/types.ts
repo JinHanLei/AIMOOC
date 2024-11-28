@@ -17,14 +17,48 @@ export type VideoConfig = {
 export enum VideoService {
   Bilibili = 'bilibili',
   Youtube = 'youtube',
-  // todo: integrate with whisper API
-  Podcast = 'podcast',
+  Icourse = 'icourse',
   Meeting = 'meeting',
   LocalVideo = 'local-video',
   LocalAudio = 'local-audio',
 }
 
 export interface CommonSubtitleItem {
-  start: string;
-  text: string;
+  start: number
+  end?: number
+  text: string
+}
+
+interface VideoDimension {
+  width: number
+  height: number
+  rotate: number
+}
+
+export interface VideoPage {
+  cid: number
+  page: number
+  from: string
+  part: string
+  duration: number
+  vid: string
+  weblink: string
+  dimension: VideoDimension
+  first_frame?: string
+}
+
+export interface VideoInfo {
+  service: VideoService
+  videoId: string
+  embedUrl: string
+  title?: string
+  courseId?: string
+  termId?: string
+  page?: number
+  description?: string
+  owner?: {
+    name: string
+    face: string
+  }
+  pages?: VideoPage[]
 }

@@ -1,26 +1,22 @@
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import getVideoId from 'get-video-id'
-import { VideoService } from '~/lib/types'
 import { extractUrl, extractPage } from '~/utils/extractUrl'
-import { getVideoInfo, getIcourseInfo } from '~/lib/bilibili/getVideoInfo'
+import { getVideoInfo, getIcourseInfo } from '~/lib/getVideoInfo'
 import { Sidebar } from '~/components/Learn/Sidebar'
-import { openDB } from 'idb'
 import { toast } from 'react-hot-toast'
 import { AINotes } from '~/components/Learn/AINotes'
 import { VideoPlayer } from '~/components/Learn/VideoPlayer'
 import { isLoggedIn } from '~/lib/auth'
-import { parseIcourseUrl } from '~/utils/parseIcourseUrl'
+import type { CommonSubtitleItem, VideoInfo } from '~/lib/types'
+import { downloadBiliVideo } from '~/lib/bilibili/downloadVideo'
+import { VideoService } from '~/lib/types'
 
-interface VideoInfo {
-  service: VideoService | 'local' | 'icourse'
-  videoId: string
-  embedUrl: string
-  title?: string
-  courseId?: string
-  termId?: string
-  page?: number
+
+interface PageState {
+  loading: boolean
+  videoInfo: VideoInfo | null
+  subtitles: CommonSubtitleItem[] | null
 }
 
 const LearnPage: NextPage<{
@@ -28,8 +24,11 @@ const LearnPage: NextPage<{
 }> = ({ showSignIn }) => {
   const router = useRouter()
   const { id } = router.query
-  const [loading, setLoading] = useState(true)
-  const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null)
+  const [state, setState] = useState<PageState>({
+    loading: true,
+    videoInfo: null,
+    subtitles: null
+  })
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -46,107 +45,118 @@ const LearnPage: NextPage<{
       return
     }
 
-    const { url } = JSON.parse(savedData)
+    const { url, config } = JSON.parse(savedData)
     
     async function fetchVideoInfo() {
-      if (url.startsWith('indexeddb://')) {
-        try {
-          const videoId = url.replace('indexeddb://', '')
-          const db = await openDB('videoDB', 1)
-          const videoFile = await db.get('videos', videoId)
+      try {
+        if (url.includes('bilibili.com')) {
+          const bvid = extractUrl(url)
+          const page = extractPage(url, new URLSearchParams(url.split('?')[1]))
           
-          if (!videoFile) {
-            throw new Error('视频文件不存在')
-          }
+          if (bvid) {
+            try {
+              // 先获取视频信息
+              const info = await getVideoInfo(bvid)
+              setState(prev => ({
+                ...prev,
+                videoInfo: {
+                  ...info,
+                  service: VideoService.Bilibili,
+                  videoId: bvid,
+                  embedUrl: '',  // 先设置为空
+                  page: page ? Number(page) : 1
+                }
+              }))
 
-          const videoUrl = URL.createObjectURL(videoFile)
-          setVideoInfo({
-            service: 'local',
-            videoId: 'local',
-            embedUrl: videoUrl,
-            title: videoFile.name || '本地视频'
-          })
-        } catch (error) {
-          console.error('获取本地视频失败:', error)
-          toast.error("视频文件可能已被删除")
-        }
-      } else if (url.includes('bilibili.com')) {
-        const bvid = extractUrl(url)
-        const page = extractPage(url, new URLSearchParams(url.split('?')[1]))
-        
-        if (bvid) {
-          try {
-            const info = await getVideoInfo(bvid)
-            setVideoInfo({
-              service: VideoService.Bilibili,
-              videoId: bvid,
-              embedUrl: `//player.bilibili.com/player.html?bvid=${bvid}&page=${page || 1}&high_quality=1&danmaku=0`,
-              page: page ? Number(page) : 1,
-              ...info
-            })
-          } catch (error) {
-            console.error('获取视频信息失败:', error)
-            setVideoInfo({
-              service: VideoService.Bilibili,
-              videoId: bvid,
-              embedUrl: `//player.bilibili.com/player.html?bvid=${bvid}&page=${page || 1}&high_quality=1&danmaku=0`,
-              page: page ? Number(page) : 1
-            })
-          }
-        }
-      } else if (url.includes('icourse163.org')) {
-        const params = parseIcourseUrl(url)
-        if (params) {
-          try {
-            if (!params.courseId || !params.termId || !params.contentId) {
-              throw new Error('缺少必要的课程参数')
+              // 然后开始下载视频
+              setState(prev => ({ ...prev, loading: true }))
+              const videoUrl = await downloadBiliVideo(url)
+              
+              // 更新视频URL
+              setState(prev => ({
+                ...prev,
+                loading: false,
+                videoInfo: prev.videoInfo ? {
+                  ...prev.videoInfo,
+                  embedUrl: videoUrl
+                } : null
+              }))
+            } catch (error) {
+              setState(prev => ({
+                ...prev,
+                loading: false,
+                videoInfo: prev.videoInfo  // 保留已获取的视频信息
+              }))
+              toast.error('视频加载失败')
             }
-            const info = await getIcourseInfo(params.courseId, params.termId, params.contentId)
-            setVideoInfo({
-              service: 'icourse',
-              videoId: params.contentId || '',
-              courseId: params.courseId,
-              termId: params.termId,
-              embedUrl: url,
-              ...info
-            })
-          } catch (error) {
-            console.error('获取慕课信息失败:', error)
-            setVideoInfo({
-              service: 'icourse',
-              videoId: params.contentId || '',
-              courseId: params.courseId,
-              termId: params.termId,
-              embedUrl: url,
-              title: '中国大学MOOC课程'
-            })
           }
         }
-      } else {
-        const { id: videoId, service } = getVideoId(url)
-        if (videoId && service === 'youtube') {
-          setVideoInfo({
-            service: VideoService.Youtube,
-            videoId,
-            embedUrl: `https://www.youtube.com/embed/${videoId}`
-          })
-        }
+      } catch (error) {
+        console.error('获取视频失败:', error)
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          videoInfo: null
+        }))
+        toast.error('视频加载失败')
       }
-      setLoading(false)
     }
 
     fetchVideoInfo()
   }, [id, router])
+
+  const handlePartChange = async (page: number) => {
+    // 先更新页码，实现即时高亮
+    setState(prev => ({
+      ...prev,
+      loading: true,
+      videoInfo: prev.videoInfo ? {
+        ...prev.videoInfo,
+        page  // 立即更新页码
+      } : null
+    }))
+
+    try {
+      const savedData = localStorage.getItem(`learning_${id}`)
+      if (!savedData) return
+
+      const { url } = JSON.parse(savedData)
+      const videoUrl = await downloadBiliVideo(url)
+
+      // 只更新视频URL
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        videoInfo: prev.videoInfo ? {
+          ...prev.videoInfo,
+          embedUrl: videoUrl
+        } : null
+      }))
+    } catch (error) {
+      console.error('切换分P失败:', error)
+      setState(prev => ({
+        ...prev,
+        loading: false
+      }))
+      toast.error('视频加载失败')
+    }
+  }
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
       <Sidebar />
       <main className="ml-[240px] flex flex-1">
         <div className="flex w-[60%] flex-col overflow-hidden">
-          <VideoPlayer videoInfo={videoInfo} loading={loading} />
+          <VideoPlayer videoInfo={state.videoInfo} loading={state.loading} />
         </div>
         <div className="w-[40%] overflow-hidden border-l border-gray-100 dark:border-gray-800/50">
-          <AINotes />
+          <AINotes 
+            subtitles={state.subtitles} 
+            parts={state.videoInfo?.pages}
+            currentPage={state.videoInfo?.page}
+            bvid={state.videoInfo?.videoId}
+            onPartChange={handlePartChange}
+          />
         </div>
       </main>
     </div>

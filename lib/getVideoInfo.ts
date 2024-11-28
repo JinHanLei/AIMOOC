@@ -1,13 +1,4 @@
-interface VideoInfo {
-  title: string
-  description: string
-  owner: {
-    name: string
-    face: string
-  }
-  duration: number
-  pubdate: number
-}
+import { VideoInfo } from "./types"
 
 export async function getVideoInfo(bvid: string): Promise<VideoInfo> {
   try {
@@ -58,9 +49,7 @@ export async function getIcourseInfo(courseId: string, termId: string, contentId
       owner: {
         name: '授课教师',
         face: '/default-teacher-avatar.png'  // 默认头像
-      },
-      duration: 0,  // 慕课视频通常不提供时长
-      pubdate: Date.now() / 1000
+      }
     }
   } catch (error) {
     console.error('获取慕课视频信息失败:', error)

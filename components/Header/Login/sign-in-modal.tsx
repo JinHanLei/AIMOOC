@@ -4,7 +4,6 @@ import { ThemeSupa } from '@supabase/auth-ui-shared'
 import Image from 'next/image'
 import Link from 'next/link'
 import React, { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
-import { useAnalytics } from '~/components/context/analytics'
 import Modal from '~/components/shared/modal'
 import { BASE_DOMAIN, CHECKOUT_URL, LOGIN_LIMIT_COUNT } from '~/utils/constants'
 import { getRedirectURL } from '~/utils/getRedirectUrl'
@@ -21,7 +20,6 @@ const SignInModal = ({
   setShowSignInModal: Dispatch<SetStateAction<boolean>>
 }) => {
   const supabaseClient = useSupabaseClient()
-  const { analytics } = useAnalytics()
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 

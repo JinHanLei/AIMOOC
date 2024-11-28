@@ -20,7 +20,7 @@ export default async function handler(
     const data = await response.json()
     
     if (data.code === 0 && data.data) {
-      const { title, desc, owner, duration, pubdate } = data.data
+      const { title, desc, owner, duration, pubdate, pages } = data.data
       return res.status(200).json({
         title,
         description: desc,
@@ -29,7 +29,8 @@ export default async function handler(
           face: owner.face
         },
         duration,
-        pubdate
+        pubdate,
+        pages
       })
     } else {
       throw new Error(data.message || '获取视频信息失败')

@@ -5,8 +5,9 @@
 const { withSentryConfig } = require('@sentry/nextjs')
 
 /** @type {import('next').NextConfig} */
-module.exports = {
+const nextConfig = {
   reactStrictMode: true,
+  productionBrowserSourceMaps: false,
   images: {
     domains: [
       process.env.SUPABASE_HOSTNAME || 'xxxx.supabase.co', // to prevent vercel failed
@@ -30,5 +31,7 @@ module.exports = {
     ]
   },
 }
+
+module.exports = nextConfig
 
 module.exports = withSentryConfig(module.exports, { silent: true }, { hideSourcemaps: true })

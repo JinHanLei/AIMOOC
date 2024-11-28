@@ -1,22 +1,6 @@
 import { useEffect } from 'react'
-import { VideoService } from '~/lib/types'
+import { VideoService, VideoInfo } from '~/lib/types'
 
-interface VideoInfo {
-  service: VideoService | 'local' | 'icourse'
-  videoId: string
-  embedUrl: string
-  title?: string
-  description?: string
-  owner?: {
-    name: string
-    face: string
-  }
-  duration?: number
-  pubdate?: number
-  page?: number
-  courseId?: string
-  termId?: string
-}
 
 interface VideoPlayerProps {
   videoInfo: VideoInfo | null
@@ -26,33 +10,30 @@ interface VideoPlayerProps {
 export function VideoPlayer({ videoInfo, loading }: VideoPlayerProps) {
   useEffect(() => {
     return () => {
-      if (videoInfo?.service === 'local' && videoInfo.embedUrl) {
+      if (videoInfo?.embedUrl?.startsWith('blob:')) {
         URL.revokeObjectURL(videoInfo.embedUrl)
       }
     }
-  }, [videoInfo])
+  }, [videoInfo?.embedUrl])
 
   return (
     <div className="w-full flex-shrink-0 bg-white p-4 dark:bg-gray-900">
       <div className="mx-auto max-w-[720px] rounded-lg border border-gray-100 bg-white dark:border-gray-800/50 dark:bg-gray-800">
         <div className="p-4">
-          {videoInfo?.embedUrl ? (
+          {loading ? (
+            <div className="aspect-video w-full rounded-lg bg-gray-100 dark:bg-gray-800">
+              <div className="flex h-full items-center justify-center text-gray-500">
+                加载中...
+              </div>
+            </div>
+          ) : videoInfo?.embedUrl ? (
             <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-black">
-              {videoInfo.service === 'local' ? (
+              {videoInfo.embedUrl.startsWith('blob:') ? (
                 <video
                   src={videoInfo.embedUrl}
                   className="absolute inset-0 h-full w-full"
                   controls
                   autoPlay={false}
-                />
-              ) : videoInfo.service === 'icourse' ? (
-                <iframe
-                  src={`https://www.icourse163.org/mob/course/learn/content?courseId=${videoInfo.courseId}&tid=${videoInfo.termId}&_trace_c_p_k2_=1#/learn/content?type=detail&id=${videoInfo.videoId}`}
-                  className="absolute inset-0 h-full w-full"
-                  allowFullScreen
-                  allow="fullscreen"
-                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
-                  frameBorder="0"
                 />
               ) : (
                 <iframe
@@ -60,15 +41,14 @@ export function VideoPlayer({ videoInfo, loading }: VideoPlayerProps) {
                   className="absolute inset-0 h-full w-full"
                   allowFullScreen
                   allow="fullscreen"
-                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
-                  frameBorder="0"
+                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
                 />
               )}
             </div>
           ) : (
             <div className="aspect-video w-full rounded-lg bg-gray-100 dark:bg-gray-800">
               <div className="flex h-full items-center justify-center text-gray-500">
-                {loading ? '加载中...' : '无法加载视频'}
+                无法加载视频
               </div>
             </div>
           )}
@@ -93,16 +73,14 @@ export function VideoPlayer({ videoInfo, loading }: VideoPlayerProps) {
               <div className="grid gap-2 border-t border-gray-100 pt-4 dark:border-gray-800/50">
                 <p>平台：{
                   videoInfo?.service === VideoService.Youtube ? 'YouTube' : 
-                  videoInfo?.service === 'local' ? '本地视频' : 
-                  videoInfo?.service === 'icourse' ? '中国大学MOOC' :
-                  '哔哩哔哩'
+                  videoInfo?.service === VideoService.LocalVideo ? '本地视频' : 
+                  videoInfo?.service === VideoService.Icourse ? '中国大学MOOC' :
+                  videoInfo?.service === VideoService.Bilibili ? '哔哩哔哩' :
+                  '未知'
                 }</p>
                 {videoInfo?.videoId !== 'local' && (
                   <>
                     <p>视频ID：{videoInfo?.videoId}</p>
-                    {videoInfo?.service === VideoService.Bilibili && videoInfo.page && (
-                      <p>分P：P{videoInfo.page}</p>
-                    )}
                     {videoInfo?.owner && (
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-gray-900 dark:text-white">UP主：</span>

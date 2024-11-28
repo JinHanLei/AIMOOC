@@ -6,7 +6,6 @@ import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
-import { AnalyticsProvider } from '~/components/context/analytics'
 import { useSignInModal } from '~/components/Header/Login/sign-in-modal'
 import { TailwindIndicator } from '~/components/ui/tailwind-indicator'
 import { Toaster } from '~/components/ui/toaster'
@@ -34,33 +33,31 @@ function MyApp({
   const isLearnPage = router.pathname?.startsWith('/learn')
 
   return (
-    <AnalyticsProvider>
-      <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TooltipProvider>
-            <div className={cn(
-              'min-h-screen font-sans antialiased',
-              'bg-white dark:bg-slate-950',
-              fontSans.variable
+    <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <TooltipProvider>
+          <div className={cn(
+            'min-h-screen font-sans antialiased',
+            'bg-white dark:bg-slate-950',
+            fontSans.variable
+          )}>
+            <Header showSignIn={showSignIn} />
+            <main className={cn(
+              "mx-auto w-full flex-1 flex-col",
+              "bg-white dark:bg-slate-950",
+              !isLearnPage && "max-w-5xl"
             )}>
-              <Header showSignIn={showSignIn} />
-              <main className={cn(
-                "mx-auto w-full flex-1 flex-col",
-                "bg-white dark:bg-slate-950",
-                !isLearnPage && "max-w-5xl"
-              )}>
-                <Component {...pageProps} showSignIn={showSignIn} />
-                <Analytics />
-              </main>
-              <div className="fixed inset-0 -z-10 bg-white dark:bg-slate-950" />
-            </div>
-            <TailwindIndicator />
-            <Toaster />
-            <SignInModal />
-          </TooltipProvider>
-        </ThemeProvider>
-      </SessionContextProvider>
-    </AnalyticsProvider>
+              <Component {...pageProps} showSignIn={showSignIn} />
+              <Analytics />
+            </main>
+            <div className="fixed inset-0 -z-10 bg-white dark:bg-slate-950" />
+          </div>
+          <TailwindIndicator />
+          <Toaster />
+          <SignInModal />
+        </TooltipProvider>
+      </ThemeProvider>
+    </SessionContextProvider>
   )
 }
 

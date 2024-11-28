@@ -5,7 +5,6 @@ import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import useFormPersist from 'react-hook-form-persist'
-import { useAnalytics } from '~/components/context/analytics'
 import { TypingSlogan } from '~/components/Home/TypingSlogan'
 import { useToast } from '~/hooks/use-toast'
 import { useLocalStorage } from '~/hooks/useLocalStorage'
@@ -55,7 +54,6 @@ export default function SlugPage({ showSignIn, hideHeader = false }: SlugPagePro
   const [userKey, setUserKey] = useLocalStorage<string>('user-openai-apikey')
   const { loading, summary, resetSummary, summarize } = useSummarize(showSignIn, getValues('enableStream'))
   const { toast } = useToast()
-  const { analytics } = useAnalytics()
 
   useFormPersist('video-summary-config-storage', {
     watch,
@@ -134,7 +132,6 @@ export default function SlugPage({ showSignIn, hideHeader = false }: SlugPagePro
   const onFormSubmit: SubmitHandler<VideoConfigSchema> = async (data) => {
     // e.preventDefault();
     await generateSummary(currentVideoUrl)
-    analytics.track('GenerateButton Clicked')
   }
   const handleApiKeyChange = (e: any) => {
     setUserKey(e.target.value)
