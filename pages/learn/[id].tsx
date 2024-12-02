@@ -1,22 +1,22 @@
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { extractUrl, extractPage } from '~/utils/extractUrl'
-import { getVideoInfo, getIcourseInfo } from '~/lib/getVideoInfo'
+import { getVideoInfo } from '~/lib/bilibili/getVideoInfo'
 import { Sidebar } from '~/components/Learn/Sidebar'
 import { toast } from 'react-hot-toast'
 import { AINotes } from '~/components/Learn/AINotes'
 import { VideoPlayer } from '~/components/Learn/VideoPlayer'
 import { isLoggedIn } from '~/lib/auth'
-import type { CommonSubtitleItem, VideoInfo } from '~/lib/types'
-import { downloadBiliVideo } from '~/lib/bilibili/downloadVideo'
+import type { SubtitleData, VideoInfo } from '~/lib/types'
+import { getBiliVideo } from '~/lib/bilibili/getVideo'
 import { VideoService } from '~/lib/types'
-
+import { getBiliSubtitles } from '~/lib/bilibili/getSubtitles'
 
 interface PageState {
   loading: boolean
   videoInfo: VideoInfo | null
-  subtitles: CommonSubtitleItem[] | null
+  subtitles: SubtitleData[] | null
 }
 
 const LearnPage: NextPage<{
@@ -24,11 +24,13 @@ const LearnPage: NextPage<{
 }> = ({ showSignIn }) => {
   const router = useRouter()
   const { id } = router.query
+  const videoRef = useRef<HTMLVideoElement>(null)
   const [state, setState] = useState<PageState>({
     loading: true,
     videoInfo: null,
     subtitles: null
   })
+  const [currentTime, setCurrentTime] = useState(0)
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -68,9 +70,9 @@ const LearnPage: NextPage<{
                 }
               }))
 
-              // 然后开始下载视频
+              // 获取视频
               setState(prev => ({ ...prev, loading: true }))
-              const videoUrl = await downloadBiliVideo(url)
+              const videoUrl = await getBiliVideo(url)
               
               // 更新视频URL
               setState(prev => ({
@@ -80,6 +82,13 @@ const LearnPage: NextPage<{
                   ...prev.videoInfo,
                   embedUrl: videoUrl
                 } : null
+              }))
+
+              // 获取字幕
+              const subtitles = await getBiliSubtitles(url)
+              setState(prev => ({
+                ...prev,
+                subtitles
               }))
             } catch (error) {
               setState(prev => ({
@@ -121,7 +130,7 @@ const LearnPage: NextPage<{
       if (!savedData) return
 
       const { url } = JSON.parse(savedData)
-      const videoUrl = await downloadBiliVideo(url)
+      const videoUrl = await getBiliVideo(url)
 
       // 只更新视频URL
       setState(prev => ({
@@ -142,12 +151,31 @@ const LearnPage: NextPage<{
     }
   }
 
+  const handleTimeUpdate = (time: number) => {
+    setCurrentTime(time)
+  }
+
+  const handleTimeClick = (time: number) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = time
+    }
+  }
+
   return (
     <div className="flex h-[calc(100vh-4rem)]">
-      <Sidebar />
+      <Sidebar 
+        currentTime={currentTime}
+        currentPage={state.videoInfo?.page}
+        parts={state.videoInfo?.pages}
+      />
       <main className="ml-[240px] flex flex-1">
         <div className="flex w-[60%] flex-col overflow-hidden">
-          <VideoPlayer videoInfo={state.videoInfo} loading={state.loading} />
+          <VideoPlayer 
+            videoRef={videoRef}
+            videoInfo={state.videoInfo} 
+            loading={state.loading}
+            onTimeUpdate={handleTimeUpdate}
+          />
         </div>
         <div className="w-[40%] overflow-hidden border-l border-gray-100 dark:border-gray-800/50">
           <AINotes 
@@ -156,6 +184,8 @@ const LearnPage: NextPage<{
             currentPage={state.videoInfo?.page}
             bvid={state.videoInfo?.videoId}
             onPartChange={handlePartChange}
+            currentTime={currentTime}
+            onTimeClick={handleTimeClick}
           />
         </div>
       </main>

@@ -24,9 +24,10 @@ export enum VideoService {
 }
 
 export interface CommonSubtitleItem {
-  start: number
-  end?: number
-  text: string
+  from: number
+  to: number
+  location: number
+  content: string
 }
 
 interface VideoDimension {
@@ -61,4 +62,15 @@ export interface VideoInfo {
     face: string
   }
   pages?: VideoPage[]
+}
+
+export interface SubtitleData {
+  lan: string
+  subtitle: CommonSubtitleItem[]
+}
+
+export interface PageState {
+  loading: boolean
+  videoInfo: VideoInfo | null
+  subtitles: SubtitleData[] | null
 }

@@ -6,7 +6,7 @@ import Mindmap from '~/components/Learn/Mindmap'
 import Quiz from '~/components/Learn/Quiz'
 import Subtitles from './Subtitles'
 import VideoPartList from './VideoPartList'
-import type { CommonSubtitleItem, VideoPage } from '~/lib/types'
+import type { CommonSubtitleItem, VideoPage, SubtitleData } from '~/lib/types'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,17 +15,19 @@ import {
 } from "~/components/ui/dropdown-menu"
 
 interface AINotesProps {
-  subtitles: CommonSubtitleItem[] | null
+  subtitles: SubtitleData[] | null
   className?: string
   parts?: VideoPage[]
   currentPage?: number
   bvid?: string
   onPartChange?: (page: number) => void
+  currentTime?: number
+  onTimeClick?: (time: number) => void
 }
 
 type TabType = 'notes' | 'mindmap' | 'quiz' | 'subtitles' | 'parts'
 
-export function AINotes({ subtitles, className, parts, currentPage, bvid, onPartChange }: AINotesProps) {
+export function AINotes({ subtitles, className, parts, currentPage, bvid, onPartChange, currentTime, onTimeClick }: AINotesProps) {
   const [activeTab, setActiveTab] = useState<TabType>('parts')
 
   const mainTabs = [
@@ -102,7 +104,11 @@ export function AINotes({ subtitles, className, parts, currentPage, bvid, onPart
       {/* 内容区域 - 添加 h-0 以启用滚动 */}
       <div className="flex-1 min-h-0">
         {activeTab === 'subtitles' ? (
-          <Subtitles subtitles={subtitles} />
+          <Subtitles 
+            subtitles={subtitles} 
+            currentTime={currentTime}
+            onTimeClick={onTimeClick}
+          />
         ) : activeTab === 'parts' ? (
           <VideoPartList 
             parts={parts} 

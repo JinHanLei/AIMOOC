@@ -2,6 +2,12 @@ import { FC } from 'react'
 import { useRouter } from 'next/router'
 import { cn } from '~/lib/utils'
 import { VideoPage } from '~/lib/types'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip"
 
 interface VideoPartListProps {
   parts?: VideoPage[]
@@ -22,40 +28,34 @@ const VideoPartList: FC<VideoPartListProps> = ({ parts, currentPage, bvid, onPar
     )
   }
 
-  const handlePartClick = async (page: number) => {
-    const savedData = localStorage.getItem(`learning_${id}`)
-    if (!savedData) return
-
-    const data = JSON.parse(savedData)
-    const newUrl = `https://www.bilibili.com/video/${bvid}?p=${page}`
-    
-    localStorage.setItem(`learning_${id}`, JSON.stringify({
-      ...data,
-      url: newUrl
-    }))
-
-    onPartChange?.(page)
-  }
-
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto">
-        <div className="p-4 space-y-1.5">
+        <div className="p-4 space-y-2">
           {parts.map((part) => (
             <button
               key={part.page}
-              onClick={() => handlePartClick(part.page)}
+              onClick={() => onPartChange?.(part.page)}
               className={cn(
-                "w-full rounded-md border px-3 py-2 text-left transition-colors",
+                "w-full rounded-lg border p-3 text-left transition-colors",
                 currentPage === part.page
                   ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                   : "border-gray-100 hover:border-blue-500 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800"
               )}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm text-gray-900 dark:text-gray-100 truncate">
-                  {part.part}
-                </span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-sm text-gray-900 dark:text-gray-100 truncate max-w-[380px]">
+                        {part.part}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{part.part}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <span className="text-xs text-gray-500 shrink-0">
                   {Math.floor(part.duration / 60)}:{String(part.duration % 60).padStart(2, '0')}
                 </span>

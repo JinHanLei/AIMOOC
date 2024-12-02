@@ -2,15 +2,43 @@ import { Book, BookOpen, Bell, Crown, BarChart2 } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { VideoPage } from '~/lib/types'
+import { useEffect, useState } from 'react'
 
 interface SidebarProps {
   className?: string
+  currentTime?: number
+  currentPage?: number
+  parts?: VideoPage[]
 }
 
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className, currentTime = 0, currentPage = 1, parts = [] }: SidebarProps) {
   const router = useRouter()
   const currentPath = router.pathname
   const learningId = router.query.id
+  const [progress, setProgress] = useState(0)
+
+  // 计算总进度
+  useEffect(() => {
+    if (!parts.length) return
+
+    // 计算总时长
+    const totalDuration = parts.reduce((sum, part) => sum + part.duration, 0)
+    
+    // 计算当前进度
+    const previousPartsDuration = parts
+      .filter(part => part.page < currentPage)
+      .reduce((sum, part) => sum + part.duration, 0)
+    
+    // 当前分P的进度
+    const currentPartProgress = currentTime || 0
+    
+    // 计算总进度百分比
+    const currentProgress = ((previousPartsDuration + currentPartProgress) / totalDuration) * 100
+    
+    // 限制在 0-100 之间
+    setProgress(Math.min(100, Math.max(0, currentProgress)))
+  }, [parts, currentPage, currentTime])
 
   const isActive = (path: string) => {
     // 特殊处理当前笔记的路径
@@ -45,9 +73,9 @@ export function Sidebar({ className }: SidebarProps) {
       className
     )}>
       <div className="flex flex-1 flex-col overflow-y-auto">
-        {/* 笔记部分 */}
+        {/* 课程部分 */}
         <div className="space-y-1 p-4">
-          <h2 className="mb-2 px-2 text-lg font-semibold">笔记</h2>
+          <h2 className="mb-2 px-2 text-lg font-semibold">课程</h2>
           <Link 
             href={`/learn/${learningId || getLastLearningId()}`}
             className={cn(
@@ -56,7 +84,7 @@ export function Sidebar({ className }: SidebarProps) {
             )}
           >
             <BookOpen className="h-5 w-5" />
-            <span>当前笔记</span>
+            <span>当前课程</span>
           </Link>
           <Link 
             href="/learn/notes" 
@@ -66,13 +94,13 @@ export function Sidebar({ className }: SidebarProps) {
             )}
           >
             <Book className="h-5 w-5" />
-            <span>笔记列表</span>
+            <span>课程列表</span>
           </Link>
         </div>
 
         {/* 学习进度 */}
         <div className="space-y-1 p-4">
-          <h2 className="mb-2 px-2 text-lg font-semibold">学习进度</h2>
+          <h2 className="mb-2 px-2 text-lg font-semibold">进度分析</h2>
           <Link href="/learn/progress" className={cn(
             "block px-2",
             isActive('/learn/progress') && "text-blue-600 dark:text-blue-400"
@@ -82,10 +110,13 @@ export function Sidebar({ className }: SidebarProps) {
               <div className="flex-1">
                 <div className="flex justify-between">
                   <span>当前进度</span>
-                  <span>75%</span>
+                  <span>{Math.round(progress)}%</span>
                 </div>
                 <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                  <div className="h-full w-3/4 rounded-full bg-blue-500" />
+                  <div 
+                    className="h-full rounded-full bg-blue-500 transition-all duration-300" 
+                    style={{ width: `${progress}%` }}
+                  />
                 </div>
               </div>
             </div>

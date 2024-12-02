@@ -5,12 +5,13 @@ import { cn } from '~/lib/utils'
 import { VideoControls } from './VideoControls'
 
 interface VideoPlayerProps {
+  videoRef: React.RefObject<HTMLVideoElement>
   videoInfo: VideoInfo | null
   loading?: boolean
+  onTimeUpdate?: (time: number) => void
 }
 
-export function VideoPlayer({ videoInfo, loading }: VideoPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
+export function VideoPlayer({ videoRef, videoInfo, loading, onTimeUpdate }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [showControls, setShowControls] = useState(false)
@@ -142,9 +143,23 @@ export function VideoPlayer({ videoInfo, loading }: VideoPlayerProps) {
     }
   }, [])
 
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    const handleTimeUpdate = () => {
+      onTimeUpdate?.(video.currentTime)
+    }
+
+    video.addEventListener('timeupdate', handleTimeUpdate)
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate)
+    }
+  }, [videoRef, onTimeUpdate])
+
   return (
-    <div className="w-full flex-shrink-0 bg-white p-4 dark:bg-gray-900">
-      <div className="mx-auto max-w-[720px] rounded-lg border border-gray-100 bg-white dark:border-gray-800/50 dark:bg-gray-800">
+    <div className="w-full flex-shrink-0 bg-white px-2 dark:bg-gray-900">
+      <div className="mx-auto rounded-lg border border-gray-100 bg-white dark:border-gray-800/50 dark:bg-gray-800">
         <div className="p-4">
           <div 
             ref={containerRef}
