@@ -6,7 +6,8 @@ import { MessageCircle, Compass } from 'lucide-react'
 import AIChat from '~/components/AIChat'
 import { useRouter } from 'next/router'
 import { cn } from '~/lib/utils'
-import { isLoggedIn, logout } from '~/lib/auth'
+import { useUser, useSupabaseClient } from '@supabase/auth-helpers-react'
+import SignIn from './Login/SignIn'
 import { ModeToggle } from './SwitchLight'
 
 interface HeaderProps {
@@ -14,16 +15,12 @@ interface HeaderProps {
 }
 
 export default function Header({ showSignIn }: HeaderProps) {
-  const [mounted, setMounted] = useState(false)
   const [showAIChat, setShowAIChat] = useState(false)
   const router = useRouter()
   const isLearnPage = router.pathname.startsWith('/learn')
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const isUserLoggedIn = isLoggedIn()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const user = useUser()
+  const supabaseClient = useSupabaseClient()
 
   // 监听路由变化，触发过渡动画
   useEffect(() => {
@@ -47,23 +44,9 @@ export default function Header({ showSignIn }: HeaderProps) {
     }
   }, [router])
 
-  const handleLogout = () => {
-    // 清除登录状态
-    logout()
-    
-    // 清除所有学习记录
-    if (typeof window !== 'undefined') {
-      const keys = Object.keys(localStorage)
-      const learningKeys = keys.filter(key => key.startsWith('learning_'))
-      learningKeys.forEach(key => localStorage.removeItem(key))
-    }
-
-    // 跳转到首页
+  const handleLogout = async () => {
+    await supabaseClient.auth.signOut()
     router.push('/')
-  }
-
-  if (!mounted) {
-    return null
   }
 
   return (
@@ -116,34 +99,20 @@ export default function Header({ showSignIn }: HeaderProps) {
             </Link>
 
             {/* 明暗模式切换按钮 */}
-            <ModeToggle />
+            {/* <ModeToggle /> */}
 
             {/* 登录按钮 */}
-            {isUserLoggedIn ? (
-              <Button
-                className="ml-2 bg-gray-600/90 px-4 text-white backdrop-blur-sm hover:bg-gray-500/90"
-                onClick={handleLogout}
-              >
-                退出
-              </Button>
-            ) : (
-              <Button
-                className="ml-2 bg-blue-600/90 px-4 text-white backdrop-blur-sm hover:bg-blue-500/90"
-                onClick={() => showSignIn(true)}
-              >
-                登录
-              </Button>
-            )}
+            <SignIn showSignIn={showSignIn} />
 
             {/* GitHub 链接 */}
-            <Link
+            {/* <Link
               href="https://github.com/yourusername/easyskill"
               target="_blank"
               rel="noopener noreferrer"
               className="ml-2 hidden sm:block hover:opacity-80"
             >
               <Github width="24" height="24" />
-            </Link>
+            </Link> */}
           </nav>
         </div>
       </header>

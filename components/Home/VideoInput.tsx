@@ -308,13 +308,10 @@ export function VideoInput({ onSubmit, getValues, register, showSignIn }: VideoI
             <PromptOptions 
               getValues={getValues} 
               register={register}
-              defaultTimestamp={true}
             />
           </div>
         )}
       </form>
-
-      {/* 移除独立的上传进度弹窗 */}
     </div>
   )
 } 

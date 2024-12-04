@@ -5,7 +5,7 @@ import { Analytics } from '@vercel/analytics/react'
 import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
 import { useRouter } from 'next/router'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSignInModal } from '~/components/Header/Login/sign-in-modal'
 import { TailwindIndicator } from '~/components/ui/tailwind-indicator'
 import { Toaster } from '~/components/ui/toaster'
@@ -31,6 +31,18 @@ function MyApp({
   const { SignInModal, setShowSignInModal: showSignIn } = useSignInModal()
   const router = useRouter()
   const isLearnPage = router.pathname?.startsWith('/learn')
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabaseClient.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        showSignIn(false)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabaseClient, showSignIn])
 
   return (
     <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>

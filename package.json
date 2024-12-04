@@ -16,6 +16,7 @@
     "@hookform/resolvers": "^2.9.11",
     "@next/font": "^13.1.5",
     "@prisma/client": "^5.22.0",
+    "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "^1.0.2",
     "@radix-ui/react-label": "^2.0.0",
     "@radix-ui/react-popover": "^1.0.4",
