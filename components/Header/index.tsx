@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import Github from '~/components/ui/GitHub'
 import { Button } from '../ui/button'
-import { MessageCircle, Compass } from 'lucide-react'
+import { MessageCircle, Compass, History, Bookmark } from 'lucide-react'
 import AIChat from '~/components/AIChat'
 import { useRouter } from 'next/router'
 import { cn } from '~/lib/utils'
@@ -51,8 +50,8 @@ export default function Header({ showSignIn }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full backdrop-blur-md">
-        <div className="absolute inset-0 border-b border-slate-900/10 bg-white/75 dark:border-slate-50/[0.06] dark:bg-gray-900/75" />
+      <header className="sticky top-0 z-40 w-full">
+        <div className="absolute inset-0 border-b border-slate-900/10 bg-white dark:border-slate-50/[0.06] dark:bg-gray-900" />
         <div className={cn(
           "relative mx-auto flex h-16 items-center",
           isLearnPage ? "px-4" : "max-w-screen-xl px-4 sm:px-6",
@@ -80,39 +79,49 @@ export default function Header({ showSignIn }: HeaderProps) {
             {/* AI 对话 */}
             <Button 
               variant="ghost" 
-              className="flex items-center gap-2 px-3 hover:bg-white/50 dark:hover:bg-gray-800/50"
+              className="flex flex-col items-center gap-0.5 px-3 py-1 h-auto min-h-[4rem] hover:bg-white/50 dark:hover:bg-gray-800/50"
               onClick={() => setShowAIChat(true)}
             >
               <MessageCircle className="h-5 w-5" />
-              <span className="hidden sm:inline">AI 对话</span>
+              <span className="text-sm">Chat</span>
             </Button>
+
+            {/* 历史记录 */}
+            <Link href="/history">
+              <Button 
+                variant="ghost"
+                className="flex flex-col items-center gap-0.5 px-3 py-1 h-auto min-h-[4rem] hover:bg-white/50 dark:hover:bg-gray-800/50"
+              >
+                <History className="h-5 w-5" />
+                <span className="text-sm">历史</span>
+              </Button>
+            </Link>
+
+            {/* 收藏夹 */}
+            <Link href="/favorites">
+              <Button 
+                variant="ghost"
+                className="flex flex-col items-center gap-0.5 px-3 py-1 h-auto min-h-[4rem] hover:bg-white/50 dark:hover:bg-gray-800/50"
+              >
+                <Bookmark className="h-5 w-5" />
+                <span className="text-sm">收藏</span>
+              </Button>
+            </Link>
 
             {/* 课程广场 */}
             <Link href="/courses">
               <Button 
                 variant="ghost"
-                className="flex items-center gap-2 px-3 hover:bg-white/50 dark:hover:bg-gray-800/50"
+                className="flex flex-col items-center gap-0.5 px-3 py-1 h-auto min-h-[4rem] hover:bg-white/50 dark:hover:bg-gray-800/50"
               >
                 <Compass className="h-5 w-5" />
-                <span className="hidden sm:inline">课程广场</span>
+                <span className="text-sm">广场</span>
               </Button>
             </Link>
-
-            {/* 明暗模式切换按钮 */}
-            {/* <ModeToggle /> */}
 
             {/* 登录按钮 */}
             <SignIn showSignIn={showSignIn} />
 
-            {/* GitHub 链接 */}
-            {/* <Link
-              href="https://github.com/yourusername/easyskill"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-2 hidden sm:block hover:opacity-80"
-            >
-              <Github width="24" height="24" />
-            </Link> */}
           </nav>
         </div>
       </header>

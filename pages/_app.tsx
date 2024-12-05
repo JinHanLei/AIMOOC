@@ -6,7 +6,6 @@ import { ThemeProvider } from 'next-themes'
 import type { AppProps } from 'next/app'
 import { useRouter } from 'next/router'
 import React, { useState, useEffect } from 'react'
-import { useSignInModal } from '~/components/Header/Login/sign-in-modal'
 import { TailwindIndicator } from '~/components/ui/tailwind-indicator'
 import { Toaster } from '~/components/ui/toaster'
 import { TooltipProvider } from '~/components/ui/tooltip'
@@ -28,7 +27,7 @@ function MyApp({
   initialSession: Session
 }>) {
   const [supabaseClient] = useState(() => createBrowserSupabaseClient())
-  const { SignInModal, setShowSignInModal: showSignIn } = useSignInModal()
+  const [showSignIn, setShowSignIn] = useState(false)
   const router = useRouter()
   const isLearnPage = router.pathname?.startsWith('/learn')
 
@@ -37,12 +36,12 @@ function MyApp({
       data: { subscription },
     } = supabaseClient.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        showSignIn(false)
+        setShowSignIn(false)
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [supabaseClient, showSignIn])
+  }, [supabaseClient])
 
   return (
     <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
@@ -53,20 +52,19 @@ function MyApp({
             'bg-white dark:bg-slate-950',
             fontSans.variable
           )}>
-            <Header showSignIn={showSignIn} />
+            <Header showSignIn={setShowSignIn} />
             <main className={cn(
               "mx-auto w-full flex-1 flex-col",
               "bg-white dark:bg-slate-950",
               !isLearnPage && "max-w-5xl"
             )}>
-              <Component {...pageProps} showSignIn={showSignIn} />
+              <Component {...pageProps} showSignIn={setShowSignIn} />
               <Analytics />
             </main>
             <div className="fixed inset-0 -z-10 bg-white dark:bg-slate-950" />
           </div>
           <TailwindIndicator />
           <Toaster />
-          <SignInModal />
         </TooltipProvider>
       </ThemeProvider>
     </SessionContextProvider>

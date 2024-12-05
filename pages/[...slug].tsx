@@ -85,7 +85,7 @@ export default function SlugPage({ showSignIn, hideHeader = false }: SlugPagePro
     ) {
       toast({
         title: '暂不支持此视频链接',
-        description: '请输入哔哩哔哩或YouTube视频链接，已支持b23.tv短链接和本地视频',
+        description: '请输入哔哩哔哩视频链接，已支持b23.tv短链接和本地视频',
       })
       return false
     }
@@ -153,8 +153,8 @@ export default function SlugPage({ showSignIn, hideHeader = false }: SlugPagePro
   }
 
   return (
-    <div className="w-full px-4 sm:px-0">
-      <div className="mt-10 sm:mt-40">
+    <div className="w-full h-[calc(100vh-4rem)] flex px-4 sm:px-0">
+      <div className="w-full max-w-5xl mt-[15vh]">
         <TypingSlogan />
         <VideoInput 
           onSubmit={generateSummary} 
@@ -162,7 +162,6 @@ export default function SlugPage({ showSignIn, hideHeader = false }: SlugPagePro
           register={register}
           showSignIn={showSignIn}
         />
-        
       </div>
     </div>
   )

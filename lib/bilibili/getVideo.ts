@@ -8,7 +8,7 @@ export async function getBiliVideo(url: string): Promise<string> {
       },
       body: JSON.stringify({ 
         url,
-        cookie: process.env.BILIBILI_SESSION_TOKEN || ''  // 同时在请求体中传递 cookie
+        cookie: process.env.BILIBILI_SESSION_TOKEN || ''
       })
     })
 
@@ -16,9 +16,17 @@ export async function getBiliVideo(url: string): Promise<string> {
       throw new Error('视频获取失败')
     }
 
-    // 创建 Blob URL
-    const blob = await response.blob()
-    return URL.createObjectURL(blob)
+    // 使用 Response.blob() 替代直接创建 Blob
+    try {
+      const blob = await response.blob()
+      return URL.createObjectURL(blob)
+    } catch (error) {
+      console.warn('流式加载中，请稍候...', error)
+      // 如果第一次失败，给一个短暂延迟后重试
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      const retryBlob = await response.blob()
+      return URL.createObjectURL(retryBlob)
+    }
   } catch (error) {
     console.error('获取视频失败:', error)
     throw error

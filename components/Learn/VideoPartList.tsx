@@ -2,6 +2,7 @@ import { FC } from 'react'
 import { useRouter } from 'next/router'
 import { cn } from '~/lib/utils'
 import { VideoPage } from '~/lib/types'
+import { Loader2 } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
@@ -14,11 +15,23 @@ interface VideoPartListProps {
   currentPage?: number
   bvid?: string
   onPartChange?: (page: number) => void
+  loading?: boolean
 }
 
-const VideoPartList: FC<VideoPartListProps> = ({ parts, currentPage, bvid, onPartChange }) => {
+const VideoPartList: FC<VideoPartListProps> = ({ parts, currentPage, bvid, onPartChange, loading = true }) => {
   const router = useRouter()
   const { id } = router.query
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center text-gray-500">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>课程列表加载中...</span>
+        </div>
+      </div>
+    )
+  }
 
   if (!parts || parts.length <= 1) {
     return (

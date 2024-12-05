@@ -23,17 +23,19 @@ interface AINotesProps {
   onPartChange?: (page: number) => void
   currentTime?: number
   onTimeClick?: (time: number) => void
+  loading?: boolean
+  learningId?: string
 }
 
 type TabType = 'notes' | 'mindmap' | 'quiz' | 'subtitles' | 'parts'
 
-export function AINotes({ subtitles, className, parts, currentPage, bvid, onPartChange, currentTime, onTimeClick }: AINotesProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('parts')
+export function AINotes({ subtitles, className, parts, currentPage, bvid, onPartChange, currentTime, onTimeClick, loading, learningId }: AINotesProps) {
+  const [activeTab, setActiveTab] = useState<TabType>('notes')
 
   const mainTabs = [
-    { id: 'parts', label: '课程选集', icon: ListVideo, component: VideoPartList },
     { id: 'notes', label: 'AI笔记', icon: FileText, component: Notes },
     { id: 'quiz', label: 'AI练习', icon: BookOpen, component: Quiz },
+    { id: 'parts', label: '课程选集', icon: ListVideo, component: VideoPartList },
   ]
 
   const dropdownTabs = [
@@ -103,7 +105,12 @@ export function AINotes({ subtitles, className, parts, currentPage, bvid, onPart
 
       {/* 内容区域 - 添加 h-0 以启用滚动 */}
       <div className="flex-1 min-h-0">
-        {activeTab === 'subtitles' ? (
+        {activeTab === 'notes' ? (
+          <Notes 
+            url={learningId} 
+            onTimeClick={onTimeClick}
+          />
+        ) : activeTab === 'subtitles' ? (
           <Subtitles 
             subtitles={subtitles} 
             currentTime={currentTime}
@@ -115,6 +122,7 @@ export function AINotes({ subtitles, className, parts, currentPage, bvid, onPart
             currentPage={currentPage} 
             bvid={bvid}
             onPartChange={onPartChange}
+            loading={loading}
           />
         ) : (
           ActiveComponent && <ActiveComponent subtitles={subtitles} />

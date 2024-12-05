@@ -8,7 +8,7 @@ import { cn } from '~/lib/utils'
 import { UseFormGetValues, UseFormRegister } from 'react-hook-form'
 import { VideoConfigSchema } from '~/utils/schemas/video'
 import { openDB } from 'idb'  // 需要安装: npm install idb
-import { isLoggedIn, getCurrentUser } from '~/lib/auth'
+import { useUser } from '@supabase/auth-helpers-react'
 
 interface VideoInputProps {
   onSubmit: (url: string) => void
@@ -58,6 +58,7 @@ export function VideoInput({ onSubmit, getValues, register, showSignIn }: VideoI
   })
   const router = useRouter()
   const { toast } = useToast()
+  const user = useUser()
 
   useEffect(() => {
     if (register) {
@@ -97,7 +98,7 @@ export function VideoInput({ onSubmit, getValues, register, showSignIn }: VideoI
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!isLoggedIn()) {
+    if (!user) {
       toast({
         title: "请先登录",
         description: "登录后即可开始学习",
@@ -169,7 +170,7 @@ export function VideoInput({ onSubmit, getValues, register, showSignIn }: VideoI
     // 验证文件类型
     if (!file.type.startsWith('video/')) {
       toast({
-        title: "不支持的文件类型",
+        title: "支持的文件类型",
         description: "请上传视频文件",
         variant: "destructive"
       })
@@ -226,7 +227,7 @@ export function VideoInput({ onSubmit, getValues, register, showSignIn }: VideoI
         <div className="flex items-center gap-2">
           {/* 根据上传状态显示输入框或进度条 */}
           {uploadState.show ? (
-            <div className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+            <div className="flex-1 rounded-lg border border-gray-200 bg-white/75 backdrop-blur-md px-4 py-3 dark:border-gray-700 dark:bg-gray-800/75">
               <div className="flex items-center justify-between text-sm">
                 <span className="truncate text-gray-600 dark:text-gray-400">
                   {uploadState.fileName}
@@ -257,8 +258,8 @@ export function VideoInput({ onSubmit, getValues, register, showSignIn }: VideoI
               type="text"
               value={inputValue}
               onChange={handleInputChange}
-              placeholder="输入B站或YouTube视频链接，按下「开始学习」"
-              className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-3 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
+              placeholder="输入视频链接，按下「开始学习」"
+              className="flex-1 rounded-lg border border-gray-200 bg-white/75 backdrop-blur-md px-4 py-3 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800/75"
             />
           )}
           
@@ -304,7 +305,7 @@ export function VideoInput({ onSubmit, getValues, register, showSignIn }: VideoI
 
         {/* 选项面板 */}
         {showOptions && (
-          <div className="absolute left-0 right-0 mt-2 rounded-lg border bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+          <div className="absolute left-0 right-0 mt-2 rounded-lg border bg-white/75 backdrop-blur-md p-4 shadow-lg dark:border-gray-700 dark:bg-gray-800/75">
             <PromptOptions 
               getValues={getValues} 
               register={register}

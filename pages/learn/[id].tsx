@@ -7,7 +7,6 @@ import { Sidebar } from '~/components/Learn/Sidebar'
 import { toast } from 'react-hot-toast'
 import { AINotes } from '~/components/Learn/AINotes'
 import { VideoPlayer } from '~/components/Learn/VideoPlayer'
-import { isLoggedIn } from '~/lib/auth'
 import type { SubtitleData, VideoInfo } from '~/lib/types'
 import { getBiliVideo } from '~/lib/bilibili/getVideo'
 import { VideoService } from '~/lib/types'
@@ -15,6 +14,7 @@ import { getBiliSubtitles } from '~/lib/bilibili/getSubtitles'
 
 interface PageState {
   loading: boolean
+  listLoading: boolean
   videoInfo: VideoInfo | null
   subtitles: SubtitleData[] | null
 }
@@ -27,16 +27,11 @@ const LearnPage: NextPage<{
   const videoRef = useRef<HTMLVideoElement>(null)
   const [state, setState] = useState<PageState>({
     loading: true,
+    listLoading: true,
     videoInfo: null,
     subtitles: null
   })
   const [currentTime, setCurrentTime] = useState(0)
-
-  useEffect(() => {
-    if (!isLoggedIn()) {
-      router.push('/')
-    }
-  }, [router])
 
   useEffect(() => {
     if (!id) return
@@ -67,7 +62,8 @@ const LearnPage: NextPage<{
                   videoId: bvid,
                   embedUrl: '',  // 先设置为空
                   page: page ? Number(page) : 1
-                }
+                },
+                listLoading: false
               }))
 
               // 获取视频
@@ -142,7 +138,7 @@ const LearnPage: NextPage<{
         } : null
       }))
     } catch (error) {
-      console.error('切换分P失败:', error)
+      console.error('切换课程失败:', error)
       setState(prev => ({
         ...prev,
         loading: false
@@ -186,6 +182,8 @@ const LearnPage: NextPage<{
             onPartChange={handlePartChange}
             currentTime={currentTime}
             onTimeClick={handleTimeClick}
+            loading={state.listLoading}
+            learningId={id as string}
           />
         </div>
       </main>
