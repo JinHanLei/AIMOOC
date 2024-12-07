@@ -10,31 +10,52 @@ interface NotesProps {
 }
 
 const formatNotes = (notes: string, onTimeClick?: (time: number) => void) => {
-  return notes.split('\n').map((line, index) => {
-    // 处理标题
-    if (line.startsWith('总结：')) {
-      return `<h3 class="font-bold text-lg mb-4">${line.replace('总结：', '')}</h3>`
-    }
-    // 处理时间戳项目
-    if (line.startsWith('[')) {
-      const timeMatch = line.match(/\[(\d+\.\d+)\]/)
-      if (timeMatch) {
-        const time = parseFloat(timeMatch[1])
-        const content = line.replace(/- \[\d+\.\d+\] /, '')
-        return `<div class="grid grid-cols-[50px_1fr] gap-2 mb-2 items-start">
-          <button 
-            class="text-xs text-blue-500 hover:text-blue-600 cursor-pointer flex justify-between w-full mt-1"
-            onclick="window.handleTimeClick(${time})"
-          >
-            <span>[</span>${formatTime(time)}<span>]</span>
-          </button>
-          <p class="text-sm leading-relaxed text-justify">${content}</p>
-        </div>`
+  const sections = notes.split('\n\n')
+  return sections
+    .map((section) => {
+      // 处理总结部分
+      if (section.startsWith('# 总结：')) {
+        const summary = section.replace('# 总结：\n', '')
+        return `<div class="mb-6">
+        <h3 class="font-bold text-lg mb-3">总结</h3>
+        <p class="text-sm leading-relaxed text-justify text-gray-600 dark:text-gray-300">
+          ${summary}
+        </p>
+      </div>`
       }
-    }
-    // 其他行
-    return `<p class="mb-2 text-justify">${line}</p>`
-  }).join('')
+
+      // 处理要点部分
+      if (section.startsWith('# 要点')) {
+        const points = section.replace('# 要点\n', '').split('\n')
+        return `<div>
+        <h3 class="font-bold text-lg mb-4">要点</h3>
+        <div class="space-y-3">
+          ${points
+            .map((point) => {
+              const timeMatch = point.match(/\[(\d+\.\d+)\]/)
+              if (timeMatch) {
+                const time = parseFloat(timeMatch[1])
+                const content = point.replace(/\[\d+\.\d+\] /, '')
+                return `<div class="grid grid-cols-[50px_1fr] gap-2 items-start group hover:bg-gray-50 dark:hover:bg-gray-800/50 -mx-2 px-2 py-1 rounded-lg transition-colors">
+                <button 
+                  class="text-xs text-blue-500 hover:text-blue-600 cursor-pointer flex justify-between w-full mt-1 opacity-75 group-hover:opacity-100"
+                  onclick="window.handleTimeClick(${time})"
+                >
+                  <span>[</span>${formatTime(time)}<span>]</span>
+                </button>
+                <p class="text-sm leading-relaxed text-justify">${content}</p>
+              </div>`
+              }
+              return ''
+            })
+            .join('')}
+        </div>
+      </div>`
+      }
+
+      return section
+    })
+    .join('')
 }
 
 const Notes: FC<NotesProps> = ({ url, onTimeClick }) => {
@@ -45,12 +66,12 @@ const Notes: FC<NotesProps> = ({ url, onTimeClick }) => {
   useEffect(() => {
     async function fetchNotes() {
       if (!url) return
-      
+
       setLoading(true)
       try {
         const savedData = localStorage.getItem(`learning_${url}`)
         if (!savedData) return
-        
+
         const { url: videoUrl } = JSON.parse(savedData)
         const notesContent = await getBiliNotes(videoUrl)
         setNotes(notesContent)
@@ -67,7 +88,7 @@ const Notes: FC<NotesProps> = ({ url, onTimeClick }) => {
 
   useEffect(() => {
     if (onTimeClick) {
-      (window as any).handleTimeClick = onTimeClick
+      ;(window as any).handleTimeClick = onTimeClick
     }
     return () => {
       delete (window as any).handleTimeClick
@@ -86,39 +107,35 @@ const Notes: FC<NotesProps> = ({ url, onTimeClick }) => {
   }
 
   if (error) {
-    return (
-      <div className="flex h-full items-center justify-center text-red-500">
-        {error}
-      </div>
-    )
+    return <div className="flex h-full items-center justify-center text-red-500">{error}</div>
   }
 
   return (
-    <div className="flex h-full flex-col min-w-0">
+    <div className="flex h-full min-w-0 flex-col">
       <div className="flex-1 overflow-y-auto p-4">
         {/* AI笔记气泡 */}
-        <div className="bg-gray-50/80 dark:bg-gray-800/50 rounded-lg p-4 mb-4">
-          <div 
+        <div className="mb-4 rounded-lg bg-gray-50/80 p-4 dark:bg-gray-800/50">
+          <div
             className="prose prose-sm dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{ __html: formatNotes(notes, onTimeClick) }}
           />
-          
+
           {/* 操作按钮组 */}
-          <div className="flex items-center mt-3 text-gray-500 text-xs">
+          <div className="mt-3 flex items-center text-xs text-gray-500">
             <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 hover:text-blue-500">
-              <Edit className="h-3 w-3 mr-1" />
+              <Edit className="mr-1 h-3 w-3" />
               修改
             </Button>
             <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 hover:text-green-500">
-              <ThumbsUp className="h-3 w-3 mr-1" />
+              <ThumbsUp className="mr-1 h-3 w-3" />
               有用
             </Button>
             <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 hover:text-red-500">
-              <ThumbsDown className="h-3 w-3 mr-1" />
+              <ThumbsDown className="mr-1 h-3 w-3" />
               无用
             </Button>
             <Button variant="ghost" size="sm" className="h-7 shrink-0 px-2 hover:text-purple-500">
-              <Save className="h-3 w-3 mr-1" />
+              <Save className="mr-1 h-3 w-3" />
               保存
             </Button>
           </div>
@@ -126,7 +143,7 @@ const Notes: FC<NotesProps> = ({ url, onTimeClick }) => {
       </div>
 
       {/* 底部对话输入框 */}
-      <div className="border-t border-gray-100 dark:border-gray-800/50 p-4">
+      <div className="border-t border-gray-100 p-4 dark:border-gray-800/50">
         <div className="flex gap-2">
           <input
             type="text"
@@ -134,7 +151,7 @@ const Notes: FC<NotesProps> = ({ url, onTimeClick }) => {
             className="flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
           />
           <Button size="sm" className="shrink-0">
-            <MessageCircle className="h-4 w-4 mr-1" />
+            <MessageCircle className="mr-1 h-4 w-4" />
             发送
           </Button>
         </div>
@@ -143,4 +160,4 @@ const Notes: FC<NotesProps> = ({ url, onTimeClick }) => {
   )
 }
 
-export default Notes 
+export default Notes

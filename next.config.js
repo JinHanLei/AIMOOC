@@ -1,22 +1,16 @@
-// This file sets a custom webpack configuration to use your Next.js app
-// with Sentry.
-// https://nextjs.org/docs/api-reference/next.config.js/introduction
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-const { withSentryConfig } = require('@sentry/nextjs')
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  productionBrowserSourceMaps: false,
+  productionBrowserSourceMaps: true,
   images: {
-    domains: [
-      process.env.SUPABASE_HOSTNAME || 'xxxx.supabase.co', // to prevent vercel failed
-      'b.jimmylv.cn',
-      'avatars.dicebear.com',
-      // "i2.hdslb.com",
-      // "avatars.githubusercontent.com",
-      // "s3-us-west-2.amazonaws.com",
-    ],
+    domains: [process.env.SUPABASE_HOSTNAME || 'xxxx.supabase.co', 'avatars.dicebear.com'],
+  },
+  webpack: (config, { dev, isServer }) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      punycode: false,
+    }
+    return config
   },
   async rewrites() {
     return [
@@ -33,5 +27,3 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
-
-module.exports = withSentryConfig(module.exports, { silent: true }, { hideSourcemaps: true })

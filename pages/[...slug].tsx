@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import getVideoId from 'get-video-id'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
@@ -78,11 +77,7 @@ export default function SlugPage({ showSignIn, hideHeader = false }: SlugPagePro
 
   const validateUrlFromAddressBar = (url?: string) => {
     const videoUrl = url || currentVideoUrl
-    if (
-      !(videoUrl.includes('bilibili.com/video') || 
-        videoUrl.includes('youtube.com') || 
-        videoUrl.startsWith('blob:'))
-    ) {
+    if (!videoUrl.includes('bilibili.com/video') && !videoUrl.startsWith('blob:')) {
       toast({
         title: '暂不支持此视频链接',
         description: '请输入哔哩哔哩视频链接，已支持b23.tv短链接和本地视频',
@@ -106,16 +101,6 @@ export default function SlugPage({ showSignIn, hideHeader = false }: SlugPagePro
     setCurrentVideoUrl(url)
 
     const videoUrl = url
-    const { id, service } = getVideoId(videoUrl)
-    if (service === VideoService.Youtube && id) {
-      setCurrentVideoId(id)
-      await summarize(
-        { videoId: id, service: VideoService.Youtube, ...formValues },
-        { userKey, shouldShowTimestamp: shouldShowTimestamp },
-      )
-      return
-    }
-
     const videoId = extractUrl(videoUrl)
     if (!videoId) {
       return
@@ -153,15 +138,10 @@ export default function SlugPage({ showSignIn, hideHeader = false }: SlugPagePro
   }
 
   return (
-    <div className="w-full h-[calc(100vh-4rem)] flex px-4 sm:px-0">
-      <div className="w-full max-w-5xl mt-[15vh]">
+    <div className="flex h-[calc(100vh-4rem)] w-full px-4 sm:px-0">
+      <div className="mt-[15vh] w-full max-w-5xl">
         <TypingSlogan />
-        <VideoInput 
-          onSubmit={generateSummary} 
-          getValues={getValues}
-          register={register}
-          showSignIn={showSignIn}
-        />
+        <VideoInput onSubmit={generateSummary} getValues={getValues} register={register} showSignIn={showSignIn} />
       </div>
     </div>
   )

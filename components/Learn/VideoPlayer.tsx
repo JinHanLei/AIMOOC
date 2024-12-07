@@ -61,26 +61,26 @@ export function VideoPlayer({ videoRef, videoInfo, loading, onTimeUpdate }: Vide
     if (!video) return
 
     const handlePlay = () => {
-      console.log('play event')  // 调试用
+      console.log('play event') // 调试用
       setIsPlaying(true)
     }
-    
+
     const handlePause = () => {
-      console.log('pause event')  // 调试用
+      console.log('pause event') // 调试用
       setIsPlaying(false)
     }
 
     const handleEnded = () => {
-      console.log('ended event')  // 调试用
+      console.log('ended event') // 调试用
       setIsPlaying(false)
     }
 
     // 添加事件监听
     video.addEventListener('play', handlePlay)
-    video.addEventListener('playing', handlePlay)  // 添加 playing 事件监听
+    video.addEventListener('playing', handlePlay) // 添加 playing 事件监听
     video.addEventListener('pause', handlePause)
     video.addEventListener('ended', handleEnded)
-    video.addEventListener('waiting', handlePause)  // 添加 waiting 事件监听
+    video.addEventListener('waiting', handlePause) // 添加 waiting 事件监听
 
     // 初始状态设置
     setIsPlaying(!video.paused)
@@ -98,13 +98,14 @@ export function VideoPlayer({ videoRef, videoInfo, loading, onTimeUpdate }: Vide
     if ((e.target as HTMLElement).closest('.video-controls')) {
       return
     }
-    
+
     const video = videoRef.current
     if (video) {
       if (video.paused) {
-        video.play()
+        video
+          .play()
           .then(() => setIsPlaying(true))
-          .catch(error => {
+          .catch((error) => {
             console.error('播放失败:', error)
             setIsPlaying(false)
           })
@@ -161,9 +162,9 @@ export function VideoPlayer({ videoRef, videoInfo, loading, onTimeUpdate }: Vide
     <div className="w-full flex-shrink-0 bg-white px-2 dark:bg-gray-900">
       <div className="mx-auto rounded-lg border border-gray-100 bg-white dark:border-gray-800/50 dark:bg-gray-800">
         <div className="p-4">
-          <div 
+          <div
             ref={containerRef}
-            className="relative aspect-video w-full overflow-hidden rounded-lg bg-black cursor-pointer"
+            className="relative aspect-video w-full cursor-pointer overflow-hidden rounded-lg bg-black"
             onClick={handleContainerClick}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
@@ -177,13 +178,11 @@ export function VideoPlayer({ videoRef, videoInfo, loading, onTimeUpdate }: Vide
                       <Loader2 className="h-6 w-6 animate-spin text-white" />
                     </div>
                   </div>
-                  <div className="text-sm font-medium text-white drop-shadow-lg">
-                    正在加载视频...
-                  </div>
+                  <div className="text-sm font-medium text-white drop-shadow-lg">正在加载视频...</div>
                 </div>
               </div>
             )}
-            
+
             {videoInfo?.embedUrl ? (
               videoInfo.embedUrl.startsWith('blob:') ? (
                 <>
@@ -193,13 +192,13 @@ export function VideoPlayer({ videoRef, videoInfo, loading, onTimeUpdate }: Vide
                     className="absolute inset-0 h-full w-full"
                     playsInline
                   />
-                  <VideoControls 
+                  <VideoControls
                     videoRef={videoRef}
                     onFullscreen={handleFullscreen}
                     isPlaying={isPlaying}
                     className={cn(
                       'video-controls transition-opacity duration-300',
-                      showControls ? 'opacity-100' : 'opacity-0'
+                      showControls ? 'opacity-100' : 'opacity-0',
                     )}
                   />
                 </>
@@ -214,9 +213,7 @@ export function VideoPlayer({ videoRef, videoInfo, loading, onTimeUpdate }: Vide
                 />
               )
             ) : (
-              <div className="flex h-full items-center justify-center text-gray-500">
-                无法加载视频
-              </div>
+              <div className="flex h-full items-center justify-center text-gray-500">无法加载视频</div>
             )}
           </div>
         </div>
@@ -226,25 +223,27 @@ export function VideoPlayer({ videoRef, videoInfo, loading, onTimeUpdate }: Vide
             <div className="space-y-4">
               {videoInfo?.title && (
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {videoInfo.title}
-                  </h1>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{videoInfo.title}</h1>
                   {videoInfo.description && (
-                    <p className="mt-2 whitespace-pre-wrap text-gray-600 dark:text-gray-400">
-                      {videoInfo.description}
-                    </p>
+                    <p className="mt-2 whitespace-pre-wrap text-gray-600 dark:text-gray-400">{videoInfo.description}</p>
                   )}
                 </div>
               )}
 
               <div className="grid gap-2 border-t border-gray-100 pt-4 dark:border-gray-800/50">
-                <p>平台：{
-                  videoInfo?.service === VideoService.Youtube ? 'YouTube' : 
-                  videoInfo?.service === VideoService.LocalVideo ? '本地视频' : 
-                  videoInfo?.service === VideoService.Icourse ? '中国大学MOOC' :
-                  videoInfo?.service === VideoService.Bilibili ? '哔哩哔哩' :
-                  '未知'
-                }</p>
+                <p>
+                  平台：
+                  {
+                    // videoInfo?.service === VideoService.Youtube ? 'YouTube' :
+                    videoInfo?.service === VideoService.LocalVideo
+                      ? '本地视频'
+                      : videoInfo?.service === VideoService.Icourse
+                      ? '中国大学MOOC'
+                      : videoInfo?.service === VideoService.Bilibili
+                      ? '哔哩哔哩'
+                      : '未知'
+                  }
+                </p>
                 {videoInfo?.videoId !== 'local' && (
                   <>
                     <p>视频ID：{videoInfo?.videoId}</p>
@@ -252,7 +251,7 @@ export function VideoPlayer({ videoRef, videoInfo, loading, onTimeUpdate }: Vide
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-gray-900 dark:text-white">UP主：</span>
                         <div className="flex items-center gap-2">
-                          <img 
+                          <img
                             src={videoInfo.owner.face}
                             alt={videoInfo.owner.name}
                             className="h-6 w-6 rounded-full"
@@ -271,4 +270,4 @@ export function VideoPlayer({ videoRef, videoInfo, loading, onTimeUpdate }: Vide
       </div>
     </div>
   )
-} 
+}

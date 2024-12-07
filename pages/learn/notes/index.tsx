@@ -16,15 +16,15 @@ const MOCK_NOTES: Note[] = [
     title: 'Python基础教程笔记',
     lastUpdated: '2024-03-20',
     videoTitle: 'Python从入门到精通',
-    platform: '哔哩哔哩'
+    platform: '哔哩哔哩',
   },
   {
     id: '2',
     title: '数据结构与算法笔记',
     lastUpdated: '2024-03-19',
     videoTitle: '算法精讲',
-    platform: 'YouTube'
-  }
+    platform: 'MOOC',
+  },
 ]
 
 const NotesListPage: NextPage = () => {
@@ -34,9 +34,7 @@ const NotesListPage: NextPage = () => {
       <main className="ml-[240px] flex-1 p-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">笔记列表</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            管理你的所有学习笔记
-          </p>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">管理你的所有学习笔记</p>
         </div>
 
         <div className="space-y-4">
@@ -68,4 +66,4 @@ const NotesListPage: NextPage = () => {
   )
 }
 
-export default NotesListPage 
+export default NotesListPage

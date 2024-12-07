@@ -5,7 +5,7 @@ import { extractUrl, extractPage } from '~/utils/extractUrl'
 import { getVideoInfo } from '~/lib/bilibili/getVideoInfo'
 import { Sidebar } from '~/components/Learn/Sidebar'
 import { toast } from 'react-hot-toast'
-import { AINotes } from '~/components/Learn/AINotes'
+import { AINotes } from '~/components/Learn/AIMooc'
 import { VideoPlayer } from '~/components/Learn/VideoPlayer'
 import type { SubtitleData, VideoInfo } from '~/lib/types'
 import { getBiliVideo } from '~/lib/bilibili/getVideo'
@@ -29,7 +29,7 @@ const LearnPage: NextPage<{
     loading: true,
     listLoading: true,
     videoInfo: null,
-    subtitles: null
+    subtitles: null,
   })
   const [currentTime, setCurrentTime] = useState(0)
 
@@ -43,54 +43,56 @@ const LearnPage: NextPage<{
     }
 
     const { url, config } = JSON.parse(savedData)
-    
+
     async function fetchVideoInfo() {
       try {
         if (url.includes('bilibili.com')) {
           const bvid = extractUrl(url)
           const page = extractPage(url, new URLSearchParams(url.split('?')[1]))
-          
+
           if (bvid) {
             try {
               // 先获取视频信息
               const info = await getVideoInfo(bvid)
-              setState(prev => ({
+              setState((prev) => ({
                 ...prev,
                 videoInfo: {
                   ...info,
                   service: VideoService.Bilibili,
                   videoId: bvid,
-                  embedUrl: '',  // 先设置为空
-                  page: page ? Number(page) : 1
+                  embedUrl: '', // 先设置为空
+                  page: page ? Number(page) : 1,
                 },
-                listLoading: false
+                listLoading: false,
               }))
 
               // 获取视频
-              setState(prev => ({ ...prev, loading: true }))
+              setState((prev) => ({ ...prev, loading: true }))
               const videoUrl = await getBiliVideo(url)
-              
+
               // 更新视频URL
-              setState(prev => ({
+              setState((prev) => ({
                 ...prev,
                 loading: false,
-                videoInfo: prev.videoInfo ? {
-                  ...prev.videoInfo,
-                  embedUrl: videoUrl
-                } : null
+                videoInfo: prev.videoInfo
+                  ? {
+                      ...prev.videoInfo,
+                      embedUrl: videoUrl,
+                    }
+                  : null,
               }))
 
               // 获取字幕
               const subtitles = await getBiliSubtitles(url)
-              setState(prev => ({
+              setState((prev) => ({
                 ...prev,
-                subtitles
+                subtitles,
               }))
             } catch (error) {
-              setState(prev => ({
+              setState((prev) => ({
                 ...prev,
                 loading: false,
-                videoInfo: prev.videoInfo  // 保留已获取的视频信息
+                videoInfo: prev.videoInfo, // 保留已获取的视频信息
               }))
               toast.error('视频加载失败')
             }
@@ -98,10 +100,10 @@ const LearnPage: NextPage<{
         }
       } catch (error) {
         console.error('获取视频失败:', error)
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           loading: false,
-          videoInfo: null
+          videoInfo: null,
         }))
         toast.error('视频加载失败')
       }
@@ -112,13 +114,15 @@ const LearnPage: NextPage<{
 
   const handlePartChange = async (page: number) => {
     // 先更新页码，实现即时高亮
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       loading: true,
-      videoInfo: prev.videoInfo ? {
-        ...prev.videoInfo,
-        page  // 立即更新页码
-      } : null
+      videoInfo: prev.videoInfo
+        ? {
+            ...prev.videoInfo,
+            page, // 立即更新页码
+          }
+        : null,
     }))
 
     try {
@@ -129,19 +133,21 @@ const LearnPage: NextPage<{
       const videoUrl = await getBiliVideo(url)
 
       // 只更新视频URL
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: false,
-        videoInfo: prev.videoInfo ? {
-          ...prev.videoInfo,
-          embedUrl: videoUrl
-        } : null
+        videoInfo: prev.videoInfo
+          ? {
+              ...prev.videoInfo,
+              embedUrl: videoUrl,
+            }
+          : null,
       }))
     } catch (error) {
       console.error('切换课程失败:', error)
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        loading: false
+        loading: false,
       }))
       toast.error('视频加载失败')
     }
@@ -159,23 +165,19 @@ const LearnPage: NextPage<{
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
-      <Sidebar 
-        currentTime={currentTime}
-        currentPage={state.videoInfo?.page}
-        parts={state.videoInfo?.pages}
-      />
+      <Sidebar currentTime={currentTime} currentPage={state.videoInfo?.page} parts={state.videoInfo?.pages} />
       <main className="ml-[240px] flex flex-1">
         <div className="flex w-[60%] flex-col overflow-hidden">
-          <VideoPlayer 
+          <VideoPlayer
             videoRef={videoRef}
-            videoInfo={state.videoInfo} 
+            videoInfo={state.videoInfo}
             loading={state.loading}
             onTimeUpdate={handleTimeUpdate}
           />
         </div>
         <div className="w-[40%] overflow-hidden border-l border-gray-100 dark:border-gray-800/50">
-          <AINotes 
-            subtitles={state.subtitles} 
+          <AINotes
+            subtitles={state.subtitles}
             parts={state.videoInfo?.pages}
             currentPage={state.videoInfo?.page}
             bvid={state.videoInfo?.videoId}
@@ -191,4 +193,4 @@ const LearnPage: NextPage<{
   )
 }
 
-export default LearnPage 
+export default LearnPage

@@ -16,7 +16,6 @@ export type VideoConfig = {
 
 export enum VideoService {
   Bilibili = 'bilibili',
-  Youtube = 'youtube',
   Icourse = 'icourse',
   Meeting = 'meeting',
   LocalVideo = 'local-video',

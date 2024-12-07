@@ -1,15 +1,15 @@
 export async function getBiliVideo(url: string): Promise<string> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_ALGO_BASE_URL || 'http://localhost:3001'
-    const response = await fetch(`${baseUrl}/bili`, {
+    const response = await fetch(`${baseUrl}/video`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         url,
-        cookie: process.env.BILIBILI_SESSION_TOKEN || ''
-      })
+        cookie: process.env.BILIBILI_SESSION_TOKEN || '',
+      }),
     })
 
     if (!response.ok) {
@@ -23,7 +23,7 @@ export async function getBiliVideo(url: string): Promise<string> {
     } catch (error) {
       console.warn('流式加载中，请稍候...', error)
       // 如果第一次失败，给一个短暂延迟后重试
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
       const retryBlob = await response.blob()
       return URL.createObjectURL(retryBlob)
     }
@@ -31,4 +31,4 @@ export async function getBiliVideo(url: string): Promise<string> {
     console.error('获取视频失败:', error)
     throw error
   }
-} 
+}

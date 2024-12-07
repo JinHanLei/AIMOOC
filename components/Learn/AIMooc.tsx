@@ -7,12 +7,7 @@ import Quiz from '~/components/Learn/Quiz'
 import Subtitles from './Subtitles'
 import VideoPartList from './VideoPartList'
 import type { CommonSubtitleItem, VideoPage, SubtitleData } from '~/lib/types'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '~/components/ui/dropdown-menu'
 
 interface AINotesProps {
   subtitles: SubtitleData[] | null
@@ -29,7 +24,18 @@ interface AINotesProps {
 
 type TabType = 'notes' | 'mindmap' | 'quiz' | 'subtitles' | 'parts'
 
-export function AINotes({ subtitles, className, parts, currentPage, bvid, onPartChange, currentTime, onTimeClick, loading, learningId }: AINotesProps) {
+export function AINotes({
+  subtitles,
+  className,
+  parts,
+  currentPage,
+  bvid,
+  onPartChange,
+  currentTime,
+  onTimeClick,
+  loading,
+  learningId,
+}: AINotesProps) {
   const [activeTab, setActiveTab] = useState<TabType>('notes')
 
   const mainTabs = [
@@ -44,10 +50,10 @@ export function AINotes({ subtitles, className, parts, currentPage, bvid, onPart
   ]
 
   // 获取当前激活的组件
-  const ActiveComponent = [...mainTabs, ...dropdownTabs].find(tab => tab.id === activeTab)?.component
+  const ActiveComponent = [...mainTabs, ...dropdownTabs].find((tab) => tab.id === activeTab)?.component
 
   return (
-    <div className={cn("flex h-full flex-col bg-white dark:bg-gray-900", className)}>
+    <div className={cn('flex h-full flex-col bg-white dark:bg-gray-900', className)}>
       {/* 顶部标签栏 */}
       <div className="flex shrink-0 border-b border-gray-100 dark:border-gray-800/50">
         {mainTabs.map((tab) => {
@@ -57,9 +63,9 @@ export function AINotes({ subtitles, className, parts, currentPage, bvid, onPart
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
               className={cn(
-                "flex min-w-[120px] flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap",
-                "hover:bg-gray-50 dark:hover:bg-gray-800",
-                activeTab === tab.id && "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
+                'flex min-w-[120px] flex-1 items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium',
+                'hover:bg-gray-50 dark:hover:bg-gray-800',
+                activeTab === tab.id && 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400',
               )}
             >
               <Icon className="h-4 w-4" />
@@ -73,9 +79,10 @@ export function AINotes({ subtitles, className, parts, currentPage, bvid, onPart
           <DropdownMenuTrigger asChild>
             <button
               className={cn(
-                "flex min-w-[120px] items-center justify-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap",
-                "hover:bg-gray-50 dark:hover:bg-gray-800",
-                dropdownTabs.some(tab => tab.id === activeTab) && "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
+                'flex min-w-[120px] items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium',
+                'hover:bg-gray-50 dark:hover:bg-gray-800',
+                dropdownTabs.some((tab) => tab.id === activeTab) &&
+                  'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400',
               )}
             >
               <span>更多功能</span>
@@ -90,36 +97,29 @@ export function AINotes({ subtitles, className, parts, currentPage, bvid, onPart
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as TabType)}
                   className={cn(
-                    "flex items-center gap-2 cursor-pointer",
-                    activeTab === tab.id && "bg-blue-50 text-blue-600 dark:bg-blue-900/20"
+                    'flex cursor-pointer items-center gap-2',
+                    activeTab === tab.id && 'bg-blue-50 text-blue-600 dark:bg-blue-900/20',
                   )}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{tab.label}</span>
                 </DropdownMenuItem>
-              )}
-            )}
+              )
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
       {/* 内容区域 - 添加 h-0 以启用滚动 */}
-      <div className="flex-1 min-h-0">
+      <div className="min-h-0 flex-1">
         {activeTab === 'notes' ? (
-          <Notes 
-            url={learningId} 
-            onTimeClick={onTimeClick}
-          />
+          <Notes url={learningId} onTimeClick={onTimeClick} />
         ) : activeTab === 'subtitles' ? (
-          <Subtitles 
-            subtitles={subtitles} 
-            currentTime={currentTime}
-            onTimeClick={onTimeClick}
-          />
+          <Subtitles subtitles={subtitles} currentTime={currentTime} onTimeClick={onTimeClick} />
         ) : activeTab === 'parts' ? (
-          <VideoPartList 
-            parts={parts} 
-            currentPage={currentPage} 
+          <VideoPartList
+            parts={parts}
+            currentPage={currentPage}
             bvid={bvid}
             onPartChange={onPartChange}
             loading={loading}
@@ -130,4 +130,4 @@ export function AINotes({ subtitles, className, parts, currentPage, bvid, onPart
       </div>
     </div>
   )
-} 
+}

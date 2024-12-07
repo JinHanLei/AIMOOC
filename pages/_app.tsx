@@ -1,4 +1,4 @@
-import { Inter as FontSans } from '@next/font/google'
+import { Inter as FontSans } from 'next/font/google'
 import { createBrowserSupabaseClient, Session } from '@supabase/auth-helpers-nextjs'
 import { SessionContextProvider } from '@supabase/auth-helpers-react'
 import { Analytics } from '@vercel/analytics/react'
@@ -13,6 +13,7 @@ import { cn } from '~/lib/utils'
 import Header from '~/components/Header'
 import '~/styles/globals.css'
 import '~/styles/markdown.css'
+import { supabase } from '~/lib/supabase'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -26,38 +27,35 @@ function MyApp({
 }: AppProps<{
   initialSession: Session
 }>) {
-  const [supabaseClient] = useState(() => createBrowserSupabaseClient())
-  const [showSignIn, setShowSignIn] = useState(false)
   const router = useRouter()
+  const [showSignIn, setShowSignIn] = useState(false)
   const isLearnPage = router.pathname?.startsWith('/learn')
 
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((event) => {
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
         setShowSignIn(false)
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [supabaseClient])
+  }, [])
 
   return (
-    <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
+    <SessionContextProvider supabaseClient={supabase} initialSession={pageProps.initialSession}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <TooltipProvider>
-          <div className={cn(
-            'min-h-screen font-sans antialiased',
-            'bg-white dark:bg-slate-950',
-            fontSans.variable
-          )}>
+          <div className={cn('min-h-screen font-sans antialiased', 'bg-white dark:bg-slate-950', fontSans.variable)}>
             <Header showSignIn={setShowSignIn} />
-            <main className={cn(
-              "mx-auto w-full flex-1 flex-col",
-              "bg-white dark:bg-slate-950",
-              !isLearnPage && "max-w-5xl"
-            )}>
+            <main
+              className={cn(
+                'mx-auto w-full flex-1 flex-col',
+                'bg-white dark:bg-slate-950',
+                !isLearnPage && 'max-w-5xl',
+              )}
+            >
               <Component {...pageProps} showSignIn={setShowSignIn} />
               <Analytics />
             </main>
