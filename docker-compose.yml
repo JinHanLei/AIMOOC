@@ -9,23 +9,23 @@
 version: '3.9'
 services:
   # Service 1> Production environment image
-  bibigpt:
+  aimooc:
     build:
       context: ./
       dockerfile: Dockerfile
       args:
         # If you want to use sentry, please set IS_USED_SENTRY=1
         IS_USED_SENTRY: 0
-    container_name: bibigpt
+    container_name: aimooc
     ports:
       - 3000:3000
 
   #  Service 2> Development environment image
-  bibigpt-dev:
+  aimooc-dev:
     build:
       context: ./
       dockerfile: dev.Dockerfile
-    container_name: bibigpt-dev
+    container_name: aimooc-dev
     ports:
       - 3002:3000
     env_file: .env
